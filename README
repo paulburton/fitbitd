@@ -1,0 +1,27 @@
+--------------------------------------------------------------------------------
+
+  fitbitd - a FitBit synchronisation daemon
+
+  Copyright (C) 2012 Paul Burton <paulburton89@gmail.com>
+
+--------------------------------------------------------------------------------
+
+fitbitd makes it possible to synchronise your FitBit tracker(s) on Linux and
+other platforms. It aims to be simple to use, such that you can simply start it
+and forget about it.
+
+--------------------------------------------------------------------------------
+
+Thanks to Kyle Machulis <kyle@nonpolynomial.com> for libfitbit, which helped
+greatly in understanding the fitbit protocol.
+
+https://github.com/qdot/libfitbit
+
+--------------------------------------------------------------------------------
+
+TODO:
+  - control protocol
+    - allow clients (eg. indicator) to connect & monitor status
+    - allow clean exit
+  - prefs/config file reading
+  - create an indicator
