@@ -10,6 +10,11 @@ fitbitd makes it possible to synchronise your FitBit tracker(s) on Linux and
 other platforms. It aims to be simple to use, such that you can simply start it
 and forget about it.
 
+You should run fitbitd as a non-root user, but your user will require read &
+write permissions for the USB device node of the fitbit base station. You can
+provide these easily by using a udev rule such as 51-fitbit.rules copied to the
+appropriate directory (eg. /etc/udev/rules.d/).
+
 --------------------------------------------------------------------------------
 
 Thanks to Kyle Machulis <kyle@nonpolynomial.com> for libfitbit, which helped
