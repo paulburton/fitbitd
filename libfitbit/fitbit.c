@@ -32,6 +32,8 @@ struct fitbit_s {
     uint8_t chan;
     uint8_t packet_id, packet_id_counter;
     uint8_t bank_id;
+
+    uint8_t curr_dev_num[2];
 };
 
 typedef struct {
@@ -48,6 +50,17 @@ static int fitbit_init_ant_channel(fitbit_t *fb, uint8_t dev_num[2])
     struct timespec ts;
     int attempts;
 
+    if (!memcmp(dev_num, fb->curr_dev_num, sizeof(fb->curr_dev_num))) {
+        DBG("ANT channel already setup\n");
+        return 0;
+    }
+    DBG("init ANT channel %d dev_num 0x%02x 0x%02x\n", fb->chan,
+        dev_num[0], dev_num[1]);
+
+    /* ensure failure will cause a retry */
+    memset(fb->curr_dev_num, 0, sizeof(dev_num));
+
+    /* reset the base */
     CHAINERR_LTZ(ant_reset(fb->ant), err);
 
     /* reset takes 500ms */
@@ -68,6 +81,7 @@ static int fitbit_init_ant_channel(fitbit_t *fb, uint8_t dev_num[2])
         nanosleep(&ts, NULL);
     }
 
+    /* channel init */
     CHAINERR_LTZ(ant_set_network_key(fb->ant, fb->chan, net_key), err);
     CHAINERR_LTZ(ant_assign_channel(fb->ant, fb->chan, 0, 0), err);
     CHAINERR_LTZ(ant_set_channel_period(fb->ant, fb->chan, period), err);
@@ -76,6 +90,9 @@ static int fitbit_init_ant_channel(fitbit_t *fb, uint8_t dev_num[2])
     CHAINERR_LTZ(ant_set_channel_search_timeout(fb->ant, fb->chan, 0xff), err);
     CHAINERR_LTZ(ant_set_channel_id(fb->ant, fb->chan, dev_num, 1, 1), err);
     CHAINERR_LTZ(ant_open_channel(fb->ant, fb->chan), err);
+
+    /* all done, record dev num */
+    memcpy(fb->curr_dev_num, dev_num, sizeof(dev_num));
 
     return 0;
 err:
