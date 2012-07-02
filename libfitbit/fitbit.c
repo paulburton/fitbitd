@@ -375,9 +375,7 @@ static void fitbit_found_ant_node(ant_t *ant, void *user)
     }
 
     fb->ant = ant;
-    fb->chan = 0;
     fb->packet_id_counter = 1;
-    fb->bank_id = 0;
 
     state->found++;
     state->found_base(fb, state->user);
