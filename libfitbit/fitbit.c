@@ -403,31 +403,28 @@ void fitbit_destroy(fitbit_t *fb)
 int fitbit_sync_trackers(fitbit_t *fb, fitbit_cb_sync *do_sync, void *user)
 {
     uint8_t dev_num[2];
-    int count = 0;
-    bool synced;
+    int ret, count = 0;
 
-    do {
-        synced = false;
-
+    while (true) {
         /* start on dev_num 0xffff to find trackers */
         dev_num[0] = dev_num[1] = 0xff;
         CHAINERR_LTZ(fitbit_init_ant_channel(fb, dev_num), err);
 
         /* look for tracker beacon */
-        CHAINERR_LTZ(fitbit_find_tracker_beacon(fb), err_iteration);
+        ret = fitbit_find_tracker_beacon(fb);
+        if (ret < 0) {
+            /* no beacon found */
+            break;
+        }
 
         if (fitbit_sync_single_tracker(fb, do_sync, user)) {
             /* sync failed */
-            goto err_iteration;
+            break;
         }
 
         /* synced a tracker on this iteration */
-        synced = true;
         count++;
-
-err_iteration:
-        break;
-    } while (synced);
+    }
 
     return count;
 err:
