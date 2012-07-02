@@ -5,10 +5,12 @@ STATIC_LIBFITBIT ?= 1
 
 fitbitd_pclibs := \
 	libcurl \
-	mxml
+	mxml \
+	dbus-1
 
 fitbitd_src := \
 	base64.c \
+	control.c \
 	main.c \
 	postdata.c \
 	prefs.c
@@ -19,7 +21,9 @@ fitbitd_cflags := \
 	$(shell pkg-config --cflags $(fitbitd_pclibs))
 
 fitbitd_ldflags := \
-	$(shell pkg-config --libs $(fitbitd_pclibs))
+	$(shell pkg-config --libs $(fitbitd_pclibs)) \
+	-lpthread \
+	-lrt
 
 fitbitd_objects := $(addprefix $(DIR_LOCAL_OBJ)/,$(patsubst %.c,%.o,$(fitbitd_src)))
 fitbitd_target := $(DIR_LOCAL_OBJ)/fitbitd

@@ -33,6 +33,7 @@
 
 #include <fitbit.h>
 #include "base64.h"
+#include "control.h"
 #include "postdata.h"
 #include "prefs.h"
 
@@ -519,6 +520,7 @@ int main(int argc, char *argv[])
     int synced, lockfile = -1;
     bool opt_version = false;
     bool opt_nodaemon = false;
+    bool opt_exit = false;
     char *opt_dump = NULL;
 
     for (argi = 1; argi < argc; argi++) {
@@ -529,6 +531,11 @@ int main(int argc, char *argv[])
 
         if (!strcmp(argv[argi], "--no-daemon")) {
             opt_nodaemon = true;
+            continue;
+        }
+
+        if (!strcmp(argv[argi], "--exit")) {
+            opt_exit = true;
             continue;
         }
 
@@ -548,6 +555,13 @@ int main(int argc, char *argv[])
         printf("fitbitd version " VERSION "\n");
         ret = EXIT_SUCCESS;
         goto out;
+    }
+
+    if (opt_exit) {
+       if (!control_call_exit()) {
+           ret = EXIT_SUCCESS;
+       }
+       goto out;
     }
 
     DBG("fitbitd version " VERSION "\n");
@@ -582,7 +596,12 @@ int main(int argc, char *argv[])
     if (!opt_nodaemon && daemonize())
         goto out;
 
-    while (true) {
+    if (control_start()) {
+        ERR("failed to start control\n");
+        goto out;
+    }
+
+    while (!control_exited()) {
         fitbit_find_bases(found_fitbit_base, &fblist);
 
         for (curr = fblist; curr; curr = curr->next) {
@@ -609,15 +628,20 @@ int main(int argc, char *argv[])
                 break;
             }
 
+            if (control_exited())
+                break;
+
             DBG("synced %d trackers\n", synced);
         }
 
-        sleep(prefs->scan_delay);
+        if (!control_exited())
+           sleep(prefs->scan_delay);
     }
 
     ret = EXIT_SUCCESS;
 
 out:
+    control_stop();
     while (fblist) {
         fitbit_list_t *curr = fblist;
         fblist = curr->next;
