@@ -5,6 +5,8 @@ VER_MIN := 1
 
 RELEASE ?= 0
 
+DESTDIR ?= /usr
+
 ifeq ($(RELEASE),1)
 CFLAGS += -DDEBUG=0
 VER_GIT :=
@@ -44,3 +46,8 @@ clobber:
 include libant/Makefile
 include libfitbit/Makefile
 include fitbitd/Makefile
+
+.PHONY: install
+install: all
+	mkdir -p "$(DESTDIR)/bin"
+	cp -v "$(fitbitd_target)" "$(DESTDIR)/bin/fitbitd"
