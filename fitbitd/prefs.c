@@ -96,7 +96,7 @@ fitbitd_prefs_t *prefs_create(void)
 
     prefs->dump_directory = NULL;
 
-    prefs->scan_delay = 30;
+    prefs->scan_delay = 10;
     prefs->sync_delay = 15 * 60;
 
     return prefs;
