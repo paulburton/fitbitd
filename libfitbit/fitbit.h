@@ -38,5 +38,6 @@ int fitbit_find_bases(fitbit_cb_foundbase *found_base, void *user);
 void fitbit_destroy(fitbit_t *fb);
 int fitbit_sync_trackers(fitbit_t *fb, fitbit_cb_sync *do_sync, void *user);
 int fitbit_run_op(fitbit_t *fb, uint8_t op[7], uint8_t *payload, size_t payload_sz, uint8_t *response, size_t response_sz, size_t *response_len);
+int fitbit_tracker_sleep(fitbit_t *fb, uint32_t duration);
 
 #endif /* __fitbit_h__ */

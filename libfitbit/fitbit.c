@@ -418,3 +418,19 @@ err_iteration:
 err:
     return -1;
 }
+
+int fitbit_tracker_sleep(fitbit_t *fb, uint32_t duration)
+{
+    uint8_t data[8];
+
+    /* reset tracker */
+    memset(data, 0, sizeof(data));
+    data[0] = 0x7f;
+    data[1] = 0x03;
+    data[7] = duration / 15; /* multiples of 15s */
+    CHAINERR_LTZ(ant_send_acked_data(fb->ant, fb->chan, data), err);
+
+    return 0;
+err:
+    return -1;
+}

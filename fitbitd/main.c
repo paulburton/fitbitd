@@ -58,15 +58,6 @@ typedef struct sync_op_s {
     struct sync_op_s *next;
 } sync_op_t;
 
-typedef struct sync_record_s {
-   uint8_t serial[5];
-   long last_synced;
-   bool present;
-   struct sync_record_s *next;
-} sync_record_t;
-
-static sync_record_t *sync_records = NULL;
-
 static long get_uptime(void)
 {
     struct sysinfo info;
@@ -77,69 +68,6 @@ static long get_uptime(void)
     }
 
     return info.uptime;
-}
-
-static sync_record_t *find_sync_record(uint8_t serial[5], bool create)
-{
-    sync_record_t *rec;
-
-    for (rec = sync_records; rec; rec = rec->next) {
-        if (memcmp(rec->serial, serial, sizeof(rec->serial)))
-            continue;
-        return rec;
-    }
-
-    if (create) {
-        rec = calloc(1, sizeof(*rec));
-        if (!rec) {
-            ERR("failed to alloc sync record\n");
-            return NULL;
-        }
-
-        memcpy(rec->serial, serial, sizeof(rec->serial));
-
-        rec->next = sync_records;
-        sync_records = rec;
-    }
-
-    return rec;
-}
-
-static void record_sync(uint8_t serial[5])
-{
-    sync_record_t *rec;
-
-    rec = find_sync_record(serial, true);
-    if (!rec) {
-        ERR("failed to record sync\n");
-        return;
-    }
-
-    rec->last_synced = get_uptime();
-}
-
-static void record_presence(uint8_t serial[5], bool present)
-{
-    sync_record_t *rec;
-
-    rec = find_sync_record(serial, true);
-    if (!rec) {
-        ERR("failed to record sync\n");
-        return;
-    }
-
-    rec->present = present;
-}
-
-static long get_last_synced(uint8_t serial[5])
-{
-    sync_record_t *rec;
-
-    rec = find_sync_record(serial, false);
-    if (rec)
-        return rec->last_synced;
-
-    return 0;
 }
 
 static void found_fitbit_base(fitbit_t *fb, void *user)
@@ -313,17 +241,7 @@ static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *use
     int bytes, ret, op_idx, op_num = 0;
     uint8_t payload_buf[512], response_buf[32768];
     size_t response_len;
-    long last_sync, sync_time;
-
-    record_presence(tracker->serial, true);
-    sync_time = get_uptime();
-
-    last_sync = get_last_synced(tracker->serial);
-    if (last_sync && ((last_sync + prefs->sync_delay) > sync_time)) {
-        INFO("skipping recently synced tracker %s\n", tracker->serial_str);
-        DBG("%ld seconds until next syncable\n", (last_sync + prefs->sync_delay) - sync_time);
-        return;
-    }
+    long sync_time = get_uptime();
 
     INFO("syncing tracker %s\n", tracker->serial_str);
 
@@ -535,7 +453,7 @@ static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *use
     } while (url[0]);
 
     INFO("sync %s complete\n", tracker->serial_str);
-    record_sync(tracker->serial);
+    fitbit_tracker_sleep(fb, prefs->sync_delay);
 
 out:
     if (response_body)
@@ -599,7 +517,6 @@ int main(int argc, char *argv[])
     fitbitd_prefs_t *prefs = NULL;
     int argi, ret = EXIT_FAILURE;
     int synced, lockfile = -1;
-    sync_record_t *rec;
     bool opt_version = false;
     bool opt_nodaemon = false;
     char *opt_dump = NULL;
@@ -666,9 +583,6 @@ int main(int argc, char *argv[])
         goto out;
 
     while (true) {
-        for (rec = sync_records; rec; rec = rec->next)
-            rec->present = false;
-
         fitbit_find_bases(found_fitbit_base, &fblist);
 
         for (curr = fblist; curr; curr = curr->next) {
