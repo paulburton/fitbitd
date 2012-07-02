@@ -29,6 +29,10 @@ struct ant_s {
     uint8_t recvbuf[512];
     size_t recvbuf_sz;
 
+    /* true if an unrecoverable error has occurred */
+    bool dead;
+
+    /* transport functions */
     void (*destroy)(ant_t *ant);
     ssize_t (*read)(ant_t *ant, uint8_t *buf, size_t sz);
     ssize_t (*write)(ant_t *ant, uint8_t *buf, size_t sz);

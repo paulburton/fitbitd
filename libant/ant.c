@@ -193,6 +193,11 @@ void ant_destroy(ant_t *ant)
     ant->destroy(ant);
 }
 
+bool ant_is_dead(ant_t *ant)
+{
+    return ant->dead;
+}
+
 int ant_receive(ant_t *ant, uint8_t *msg_id, uint8_t *len, uint8_t *buf, size_t sz)
 {
     ant_message_t *msg;

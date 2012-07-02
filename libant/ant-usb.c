@@ -50,8 +50,10 @@ static ssize_t ant_usb_read(ant_t *ant, uint8_t *buf, size_t sz)
 
     ret = libusb_bulk_transfer(usbant->dev, usbant->ep | LIBUSB_ENDPOINT_IN, buf, sz, &trans, 100);
     if (ret) {
-        if (ret != LIBUSB_ERROR_TIMEOUT)
+        if (ret != LIBUSB_ERROR_TIMEOUT) {
             DBG("bulk read failure %d\n", ret);
+            ant->dead = true;
+        }
         return -1;
     }
 

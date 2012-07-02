@@ -426,6 +426,10 @@ int fitbit_sync_trackers(fitbit_t *fb, fitbit_cb_sync *do_sync, void *user)
         count++;
     }
 
+    /* it's possible we failed because the base disconnected/errored */
+    if (ant_is_dead(fb->ant))
+        goto err;
+
     return count;
 err:
     return -1;

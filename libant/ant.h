@@ -18,6 +18,7 @@
 #ifndef __ant_h__
 #define __ant_h__
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef struct ant_s ant_t;
@@ -26,6 +27,7 @@ typedef void (ant_cb_foundnode)(ant_t *ant, void *user);
 
 int ant_find_nodes(ant_cb_foundnode *found_node, void *user);
 void ant_destroy(ant_t *ant);
+bool ant_is_dead(ant_t *ant);
 int ant_receive(ant_t *ant, uint8_t *msg_id, uint8_t *len, uint8_t *buf, size_t sz);
 int ant_poll(ant_t *ant);
 
