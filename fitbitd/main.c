@@ -512,6 +512,18 @@ static int daemonize(void)
     return 0;
 }
 
+static void print_usage(FILE *f)
+{
+    fprintf(f, "Usage: fitbitd <args>\n"
+          "\n"
+          "Where args is any of:\n"
+          "  --help             Output this message\n"
+          "  --version          Output version and exit\n"
+          "  --no-daemon        Don't daemonise fitbitd\n"
+          "  --dump <dir>       Dump all sync operations to the directory <dir>\n"
+          "  --exit             Request that fitbitd exits\n");
+}
+
 int main(int argc, char *argv[])
 {
     fitbit_list_t *fblist = NULL, *curr;
@@ -521,11 +533,17 @@ int main(int argc, char *argv[])
     bool opt_version = false;
     bool opt_nodaemon = false;
     bool opt_exit = false;
+    bool opt_help = false;
     char *opt_dump = NULL;
 
     for (argi = 1; argi < argc; argi++) {
         if (!strcmp(argv[argi], "--version")) {
             opt_version = true;
+            continue;
+        }
+
+        if (!strcmp(argv[argi], "--help")) {
+            opt_help = true;
             continue;
         }
 
@@ -549,10 +567,18 @@ int main(int argc, char *argv[])
         }
 
         ERR("Unknown argument '%s'\n", argv[argi]);
+        print_usage(stderr);
         goto out;
     }
+
     if (opt_version) {
         printf("fitbitd version " VERSION "\n");
+        ret = EXIT_SUCCESS;
+        goto out;
+    }
+
+    if (opt_help) {
+        print_usage(stdout);
         ret = EXIT_SUCCESS;
         goto out;
     }
