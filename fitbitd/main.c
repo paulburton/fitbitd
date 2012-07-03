@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <sys/file.h>
 #include <sys/stat.h>
-#include <sys/sysinfo.h>
 
 #include <curl/curl.h>
 #include <mxml.h>
@@ -34,6 +33,8 @@
 #include <fitbit.h>
 #include "base64.h"
 #include "control.h"
+#include "devstate.h"
+#include "fitbitd-utils.h"
 #include "postdata.h"
 #include "prefs.h"
 
@@ -59,17 +60,12 @@ typedef struct sync_op_s {
     struct sync_op_s *next;
 } sync_op_t;
 
-static long get_uptime(void)
-{
-    struct sysinfo info;
-
-    if (sysinfo(&info)) {
-        ERR("sysinfo failure %d\n", errno);
-        return 0;
-    }
-
-    return info.uptime;
-}
+typedef struct {
+    fitbit_tracker_info_t *tracker;
+    long sync_time;
+    char tracker_id[20];
+    char user_id[20];
+} record_state_t;
 
 static void found_fitbit_base(fitbit_t *fb, void *user)
 {
@@ -119,7 +115,7 @@ static size_t upload_response_write(void *buf, size_t sz, size_t num, void *user
     return rsz;
 }
 
-static void parse_response_part(postdata_t *pd, const char *resp)
+static void parse_response_part(postdata_t *pd, const char *resp, record_state_t *rst)
 {
     const char *eq;
     char name[128], val[128];
@@ -141,9 +137,15 @@ static void parse_response_part(postdata_t *pd, const char *resp)
     strcpy(val, eq + 1);
 
     postdata_append(pd, name, val);
+
+    if (!strcmp(name, "trackerPublicId")) {
+        strncpy(rst->tracker_id, val, sizeof(rst->tracker_id));
+    } else if (!strcmp(name, "userPublicId")) {
+        strncpy(rst->user_id, val, sizeof(rst->user_id));
+    }
 }
 
-static void parse_response(postdata_t *pd, const char *resp)
+static void parse_response(postdata_t *pd, const char *resp, record_state_t *rst)
 {
     const char *curr_start, *curr_end;
     char buf[128];
@@ -156,7 +158,7 @@ static void parse_response(postdata_t *pd, const char *resp)
 
         memcpy(buf, curr_start, curr_end - curr_start);
         buf[curr_end - curr_start] = 0;
-        parse_response_part(pd, buf);
+        parse_response_part(pd, buf, rst);
 
         if (!*curr_end)
            break;
@@ -227,6 +229,30 @@ static void dump_sync_op(fitbitd_prefs_t *prefs, uint8_t serial[5], long sync_ti
     }
 }
 
+static void record_callback(devstate_t *dev, void *user)
+{
+    record_state_t *rst = user;
+
+    dev->last_sync_time = rst->sync_time;
+
+    if (rst->tracker_id[0])
+        strncpy(dev->tracker_id, rst->tracker_id, sizeof(dev->tracker_id));
+    if (rst->user_id[0])
+        strncpy(dev->user_id, rst->user_id, sizeof(dev->user_id));
+
+    DBG("record_callback tracker %s\n", rst->tracker_id);
+}
+
+static void state_syncing_callback(devstate_t *dev, void *user)
+{
+    dev->state |= DEV_STATE_SYNCING;
+}
+
+static void state_not_syncing_callback(devstate_t *dev, void *user)
+{
+    dev->state &= ~DEV_STATE_SYNCING;
+}
+
 static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *user)
 {
     fitbitd_prefs_t *prefs = user;
@@ -242,9 +268,16 @@ static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *use
     int bytes, ret, op_idx, op_num = 0;
     uint8_t payload_buf[512], response_buf[32768];
     size_t response_len;
-    long sync_time = get_uptime();
+    record_state_t rst;
 
     INFO("syncing tracker %s\n", tracker->serial_str);
+    devstate_record(tracker->serial, state_syncing_callback, &rst);
+    control_signal_state_change();
+
+    rst.tracker = tracker;
+    rst.sync_time = get_uptime();
+    rst.tracker_id[0] = 0;
+    rst.user_id[0] = 0;
 
     curl = curl_easy_init();
     if (!curl) {
@@ -270,9 +303,12 @@ static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *use
 
         /* parse response body */
         if (response_body) {
-            parse_response(pd, response_body);
+            parse_response(pd, response_body, &rst);
             free(response_body);
             response_body = NULL;
+    
+            devstate_record(tracker->serial, record_callback, &rst);
+            control_signal_state_change();
         }
 
         /* perform ops */
@@ -292,7 +328,7 @@ static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *use
                 continue;
             }
 
-            dump_sync_op(prefs, tracker->serial, sync_time, op_num,
+            dump_sync_op(prefs, tracker->serial, rst.sync_time, op_num,
                   op->op, op->payload, op->payload_sz,
                   response_buf, response_len);
 
@@ -456,7 +492,13 @@ static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *use
     INFO("sync %s complete\n", tracker->serial_str);
     fitbit_tracker_sleep(fb, prefs->sync_delay);
 
+    rst.sync_time = get_uptime();
+    devstate_record(tracker->serial, record_callback, &rst);
+
 out:
+    devstate_record(tracker->serial, state_not_syncing_callback, &rst);
+    control_signal_state_change();
+
     if (response_body)
         free(response_body);
     while (ops) {
@@ -660,6 +702,7 @@ int main(int argc, char *argv[])
             DBG("synced %d trackers\n", synced);
         }
 
+        devstate_clean(get_uptime() - ((prefs->sync_delay * 3) / 2));
         if (!control_exited())
            sleep(prefs->scan_delay);
     }

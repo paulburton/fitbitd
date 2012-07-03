@@ -11,6 +11,8 @@ fitbitd_pclibs := \
 fitbitd_src := \
 	base64.c \
 	control.c \
+	devstate.c \
+	fitbitd-utils.c \
 	main.c \
 	postdata.c \
 	prefs.c

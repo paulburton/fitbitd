@@ -25,8 +25,5 @@ https://github.com/qdot/libfitbit
 --------------------------------------------------------------------------------
 
 TODO:
-  - control protocol
-    - allow clients (eg. indicator) to connect & monitor status
-    - allow clean exit
   - prefs/config file reading
   - create an indicator

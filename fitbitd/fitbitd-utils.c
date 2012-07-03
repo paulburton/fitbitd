@@ -15,15 +15,22 @@
  * along with fitbitd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __control_h__
-#define __control_h__
+#include <errno.h>
+#include <sys/sysinfo.h>
 
-int control_start(void);
-void control_stop(void);
-bool control_exited(void);
+#define LOG_TAG "fitbitd-utils"
+#include "log.h"
 
-void control_signal_state_change(void);
+#include "fitbitd-utils.h"
 
-int control_call_exit(void);
+long get_uptime(void)
+{
+    struct sysinfo info;
 
-#endif /* __control_h__ */
+    if (sysinfo(&info)) {
+        ERR("sysinfo failure %d\n", errno);
+        return 0;
+    }
+
+    return info.uptime;
+}

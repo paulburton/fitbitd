@@ -15,15 +15,9 @@
  * along with fitbitd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __control_h__
-#define __control_h__
+#ifndef __fitbitd_utils_h__
+#define __fitbitd_utils_h__
 
-int control_start(void);
-void control_stop(void);
-bool control_exited(void);
+long get_uptime(void);
 
-void control_signal_state_change(void);
-
-int control_call_exit(void);
-
-#endif /* __control_h__ */
+#endif /* __fitbitd_utils_h__ */
