@@ -450,3 +450,43 @@ int fitbit_tracker_sleep(fitbit_t *fb, uint32_t duration)
 err:
     return -1;
 }
+
+int fitbit_tracker_set_chatter(fitbit_t *fb, char *greeting, char *msg[3])
+{
+    uint8_t op[7];
+    uint8_t payload[0x40];
+    int i;
+
+    /* setup op */
+    memset(op, 0, sizeof(op));
+    op[0] = 0x23;
+    op[2] = sizeof(payload);
+
+    /* setup payload */
+    memset(payload, 0, sizeof(payload));
+    payload[4] = 0xe2;
+    payload[5] = 0x02;
+    payload[6] = 0x9d;
+    payload[7] = 0x03;
+    payload[8] = 0x48;
+    payload[9] = 0x2f;
+    payload[10] = 0x52;
+    payload[11] = 0x09;
+    payload[12] = 0x5b;
+    payload[13] = 0x3e;
+    payload[21] = 0xff;
+
+    /* greeting message */
+    if (strlen(greeting) > 8)
+        return -1;
+    strncpy((char*)&payload[24], greeting, 10);
+
+    /* chatter messages */
+    for (i = 0; i < 3; i++) {
+        if (strlen(msg[i]) > 8)
+            return -1;
+        strncpy((char*)&payload[34 + (i * 10)], msg[i], 10);
+    }
+
+    return fitbit_run_op(fb, op, payload, sizeof(payload), NULL, 0, NULL);
+}
