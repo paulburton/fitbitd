@@ -62,3 +62,8 @@ clean: clean-fitbitd
 clean-fitbitd: objdir:=$(DIR_LOCAL_OBJ)
 clean-fitbitd:
 	rm -rf $(objdir)
+
+install: install-fitbitd
+.PHONY: install-fitbitd
+install-fitbitd: $(fitbitd_target)
+	install -Dm755 "$(fitbitd_target)" "$(DESTDIR)/bin/fitbitd"

@@ -43,11 +43,9 @@ clean:
 clobber:
 	rm -rf $(DIR_OUT)
 
+.PHONY: install
+install:
+
 include libant/Makefile
 include libfitbit/Makefile
 include fitbitd/Makefile
-
-.PHONY: install
-install: all
-	mkdir -p "$(DESTDIR)/bin"
-	cp -v "$(fitbitd_target)" "$(DESTDIR)/bin/fitbitd"
