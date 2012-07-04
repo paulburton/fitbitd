@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=eu.paulburton.fitbitd.server
+Exec=/usr/bin/fitbitd

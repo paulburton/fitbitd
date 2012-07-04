@@ -65,5 +65,7 @@ clean-fitbitd:
 
 install: install-fitbitd
 .PHONY: install-fitbitd
+install-fitbitd: ldir:=$(DIR_LOCAL)
 install-fitbitd: $(fitbitd_target)
 	install -Dm755 "$(fitbitd_target)" "$(DESTDIR)/bin/fitbitd"
+	install -Dm644 "$(ldir)/fitbitd.service" "$(DESTDIR)/share/dbus-1/services/fitbitd.service"
