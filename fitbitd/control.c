@@ -247,7 +247,12 @@ void *control_main(void *user)
     sem_post(&sem_control_init);
 
     while (!control_exit) {
-        dbus_connection_read_write(conn, 0);
+        if (!dbus_connection_read_write(conn, 500)) {
+            ERR("DBUS connection dead\n");
+            control_exit = true;
+            goto out;
+        }
+
         msg = dbus_connection_pop_message(conn);
 
         if (!msg) {
