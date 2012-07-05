@@ -46,6 +46,11 @@ clobber:
 .PHONY: install
 install:
 
+# daemon
 include libant/Makefile
 include libfitbit/Makefile
 include fitbitd/Makefile
+
+# clients
+include libfitbitdcontrol/Makefile
+include indicator/Makefile
