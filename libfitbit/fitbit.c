@@ -58,7 +58,7 @@ static int fitbit_init_ant_channel(fitbit_t *fb, uint8_t dev_num[2])
         dev_num[0], dev_num[1]);
 
     /* ensure failure will cause a retry */
-    memset(fb->curr_dev_num, 0, sizeof(dev_num));
+    memset(fb->curr_dev_num, 0, sizeof(fb->curr_dev_num));
 
     /* reset the base */
     CHAINERR_LTZ(ant_reset(fb->ant), err);
@@ -92,7 +92,7 @@ static int fitbit_init_ant_channel(fitbit_t *fb, uint8_t dev_num[2])
     CHAINERR_LTZ(ant_open_channel(fb->ant, fb->chan), err);
 
     /* all done, record dev num */
-    memcpy(fb->curr_dev_num, dev_num, sizeof(dev_num));
+    memcpy(fb->curr_dev_num, dev_num, sizeof(fb->curr_dev_num));
 
     return 0;
 err:
