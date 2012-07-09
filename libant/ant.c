@@ -139,10 +139,9 @@ static int ant_read_response(ant_t *ant, uint8_t msg_id, uint8_t *code)
 
         ant_message_destroy(msg);
         msg = NULL;
-        break;
+        return 0;
     }
 
-    return 0;
 err:
     if (msg != NULL)
         ant_message_destroy(msg);
