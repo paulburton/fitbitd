@@ -446,7 +446,11 @@ int ant_send_acked_data(ant_t *ant, uint8_t chan, uint8_t data[8])
     memset(&ts, 0, sizeof(ts));
     ts.tv_nsec = 100 * 1000000; /* 100ms */
     while (attempts--) {
-        CHAINERR_LTZ(ant_read_response(ant, 0x1, &response_code), err_response);
+        if (ant_read_response(ant, 0x1, &response_code)) {
+            nanosleep(&ts, NULL);
+            continue;
+        }
+
         if (response_code == 5) {
             /* TX complete */
             DBG("acked data TX complete\n");
@@ -457,9 +461,6 @@ int ant_send_acked_data(ant_t *ant, uint8_t chan, uint8_t data[8])
             /* TX failed */
             goto err;
         }
-
-err_response:
-        nanosleep(&ts, NULL);
     }
 
     return 0;
