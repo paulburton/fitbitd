@@ -381,6 +381,8 @@ int ant_reset(ant_t *ant)
     ant_message_destroy(msg);
     msg = NULL;
 
+    ant->recvbuf_sz = 0;
+
     return 0;
 err:
     if (msg)
