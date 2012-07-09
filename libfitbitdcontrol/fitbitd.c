@@ -239,12 +239,23 @@ int fitbitd_enum_trackers(fitbitd_tracker_callback *callback, void *user)
     return ret;
 }
 
-static DBusGProxy *signal_proxy = NULL;
-
 typedef struct {
     fitbitd_change_callback *callback;
     void *user;
 } watch_change_state_t;
+
+static DBusGProxy *signal_proxy = NULL;
+static watch_change_state_t *watch_change_state = NULL;
+
+static void callback_signal_proxy_destroyed(DBusGProxy *proxy, gpointer user_data)
+{
+    signal_proxy = NULL;
+
+    if (watch_change_state) {
+        if (fitbitd_watch_changes(watch_change_state->callback, watch_change_state->user))
+            g_printerr("Failed to reconnect to fitbitd\n");
+    }
+}
 
 static void callback_state_changed(DBusGProxy *proxy, void *user)
 {
@@ -255,8 +266,6 @@ static void callback_state_changed(DBusGProxy *proxy, void *user)
 
 int fitbitd_watch_changes(fitbitd_change_callback *callback, void *user)
 {
-    watch_change_state_t *state;
-
     if (!signal_proxy) {
         DBusGConnection *conn;
         GError *err = NULL;
@@ -274,19 +283,22 @@ int fitbitd_watch_changes(fitbitd_change_callback *callback, void *user)
             return -1;
         }
 
+        g_signal_connect(signal_proxy, "destroy", G_CALLBACK(callback_signal_proxy_destroyed), NULL); 
         dbus_g_proxy_add_signal(signal_proxy, "StateChanged", G_TYPE_INVALID);
     }
 
-    state = g_new0(watch_change_state_t, 1);
-    if (!state) {
-        g_printerr("Failed to alloc watch_change_state_t\n");
-        return -1;
+    if (!watch_change_state) {
+        watch_change_state = g_new0(watch_change_state_t, 1);
+        if (!watch_change_state) {
+            g_printerr("Failed to alloc watch_change_state_t\n");
+            return -1;
+        }
     }
 
-    state->callback = callback;
-    state->user = user;
+    watch_change_state->callback = callback;
+    watch_change_state->user = user;
 
-    dbus_g_proxy_connect_signal(signal_proxy, "StateChanged", (GCallback)callback_state_changed, state, (GClosureNotify)g_free);
+    dbus_g_proxy_connect_signal(signal_proxy, "StateChanged", (GCallback)callback_state_changed, watch_change_state, NULL);
 
     return 0;
 }
