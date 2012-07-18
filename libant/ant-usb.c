@@ -139,10 +139,6 @@ int ant_usb_find_nodes(ant_cb_foundnode *found_node, void *user)
             _usb = NULL;
             goto out;
         }
-
-#if DEBUG
-        libusb_set_debug(_usb, LOG_LEVEL_INFO);
-#endif
     }
 
     count = libusb_get_device_list(_usb, &list);
