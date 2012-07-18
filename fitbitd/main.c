@@ -547,9 +547,12 @@ static int daemonize(void)
         return -1;
 
     /* reopen std files */
-    freopen("/dev/null", "r", stdin);
-    freopen("/dev/null", "w", stdout);
-    freopen("/dev/null", "w", stderr);
+    if (!freopen("/dev/null", "r", stdin))
+       ERR("failed to freopen stdin\n");
+    if (!freopen("/dev/null", "w", stdout))
+       ERR("failed to freopen stdout\n");
+    if (!freopen("/dev/null", "w", stderr))
+       ERR("failed to freopen stderr\n");
 
     return 0;
 }
