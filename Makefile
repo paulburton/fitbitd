@@ -12,7 +12,9 @@ CFLAGS += -DDEBUG=0
 VER_GIT :=
 else
 CFLAGS += -DDEBUG=1 -g
+ifeq ($(VER_GIT),)
 VER_GIT := $(shell git rev-parse --short HEAD || echo git)
+endif
 endif
 
 DIR_OUT := out
