@@ -29,6 +29,7 @@ typedef struct {
     char *os_name;
     char *lock_filename;
     char *dump_directory;
+    char *log_filename;
 } fitbitd_prefs_t;
 
 fitbitd_prefs_t *prefs_create(void);

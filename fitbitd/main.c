@@ -566,6 +566,7 @@ static void print_usage(FILE *f)
           "  --version          Output version and exit\n"
           "  --no-daemon        Don't daemonise fitbitd\n"
           "  --dump <dir>       Dump all sync operations to the directory <dir>\n"
+          "  --log <filename>   Write log messages to <filename>\n"
           "  --exit             Request that fitbitd exits\n");
 }
 
@@ -580,6 +581,7 @@ int main(int argc, char *argv[])
     bool opt_exit = false;
     bool opt_help = false;
     char *opt_dump = NULL;
+    char *opt_log = NULL;
 
     for (argi = 1; argi < argc; argi++) {
         if (!strcmp(argv[argi], "--version")) {
@@ -608,6 +610,15 @@ int main(int argc, char *argv[])
                 goto out;
             }
             opt_dump = argv[argi];
+            continue;
+        }
+
+        if (!strcmp(argv[argi], "--log")) {
+            if (++argi >= argc) {
+                ERR("--log requires filename\n");
+                goto out;
+            }
+            opt_log = argv[argi];
             continue;
         }
 
@@ -666,6 +677,11 @@ int main(int argc, char *argv[])
 
     if (!opt_nodaemon && daemonize())
         goto out;
+
+    if (opt_log) {
+      if (!freopen(opt_log, "w", stderr))
+         ERR("failed to freopen stderr for log %s\n", opt_log);
+    }
 
     if (control_start()) {
         ERR("failed to start control\n");

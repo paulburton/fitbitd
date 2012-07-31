@@ -95,6 +95,7 @@ fitbitd_prefs_t *prefs_create(void)
     strcpy(&prefs->lock_filename[strlen(cfg_home)], "/lock");
 
     prefs->dump_directory = NULL;
+    prefs->log_filename = NULL;
 
     prefs->scan_delay = 10;
     prefs->sync_delay = 15 * 60;
@@ -117,6 +118,7 @@ oom_prefs:
 
 void prefs_destroy(fitbitd_prefs_t *prefs)
 {
+    free(prefs->log_filename);
     free(prefs->dump_directory);
     free(prefs->lock_filename);
     free(prefs->os_name);
