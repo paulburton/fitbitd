@@ -29,7 +29,7 @@ fitbitd_ldflags := \
 
 fitbitd_objects := $(addprefix $(DIR_LOCAL_OBJ)/,$(patsubst %.c,%.o,$(fitbitd_src)))
 fitbitd_target := $(DIR_LOCAL_OBJ)/fitbitd
-fitbitd_deps := fitbitd-pkgconfig-deps
+fitbitd_deps :=
 
 ifeq ($(STATIC_LIBFITBIT),1)
 fitbitd_deps += \

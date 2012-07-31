@@ -19,7 +19,7 @@ $(libfitbitdcontrol_a_target): $(libfitbitdcontrol_a_objects)
 	@mkdir -p $(dir $@)
 	$(AR) rcs "$@" $(libfitbitdcontrol_a_objects)
 
-$(libfitbitdcontrol_a_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@)) libfitbitdcontrol-pkgconfig-deps
+$(libfitbitdcontrol_a_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@))
 	@mkdir -p $(dir $@)
 	$(CC) $(libfitbitdcontrol_cflags) $(CFLAGS) -o "$@" -c "$<"
 

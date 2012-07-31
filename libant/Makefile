@@ -33,7 +33,7 @@ $(libant_a_target): $(libant_a_objects)
 	@mkdir -p $(dir $@)
 	$(AR) rcs "$@" $(libant_a_objects)
 
-$(libant_a_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@)) libant-pkgconfig-deps
+$(libant_a_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@))
 	@mkdir -p $(dir $@)
 	$(CC) $(libant_cflags_static) $(CFLAGS) -o "$@" -c "$<"
 
@@ -41,7 +41,7 @@ $(libant_so_target): $(libant_so_objects)
 	@mkdir -p $(dir $@)
 	$(CC) -shared $(libant_cflags_shared) $(CFLAGS) $(libant_ldflags) -o "$@" $(libant_so_objects)
 
-$(libant_so_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@)) libant-pkgconfig-deps
+$(libant_so_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@))
 	@mkdir -p $(dir $@)
 	$(CC) $(libant_cflags_shared) $(CFLAGS) -o "$@" -c "$<"
 

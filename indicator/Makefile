@@ -34,7 +34,7 @@ $(indicator_target): $(indicator_objects) $(libfitbitdcontrol_a_target)
 	@mkdir -p $(dir $@)
 	$(CC) $(indicator_cflags) $(CFLAGS) -o "$@" $(indicator_objects) $(indicator_ldflags)
 
-$(indicator_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@)) indicator-pkgconfig-deps
+$(indicator_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@))
 	@mkdir -p $(dir $@)
 	$(CC) $(indicator_cflags) $(CFLAGS) -o "$@" -c "$<"
 
