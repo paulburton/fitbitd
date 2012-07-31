@@ -118,6 +118,7 @@ oom_prefs:
 void prefs_destroy(fitbitd_prefs_t *prefs)
 {
     free(prefs->dump_directory);
+    free(prefs->lock_filename);
     free(prefs->os_name);
     free(prefs->client_version);
     free(prefs->client_id);
