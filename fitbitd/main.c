@@ -681,6 +681,7 @@ int main(int argc, char *argv[])
     if (opt_log) {
       if (!freopen(opt_log, "w", stderr))
          ERR("failed to freopen stderr for log %s\n", opt_log);
+      setvbuf(stderr, NULL, _IONBF, 0);
     }
 
     if (control_start()) {

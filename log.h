@@ -24,11 +24,11 @@
 #define LOG_TAG __FILE__
 #endif
 
-#define ERR(x...) do { fprintf(stderr, "E:" LOG_TAG ": " x); } while (0)
-#define INFO(x...) do { fprintf(stderr, "I:" LOG_TAG ": " x); } while (0)
+#define ERR(x...) do { fprintf(stderr, "E:" LOG_TAG ": " x); fflush(stderr); } while (0)
+#define INFO(x...) do { fprintf(stderr, "I:" LOG_TAG ": " x); fflush(stderr); } while (0)
 
 #if DEBUG == 1
-#define DBG(x...) do { fprintf(stderr, "D:" LOG_TAG ": " x); } while (0)
+#define DBG(x...) do { fprintf(stderr, "D:" LOG_TAG ": " x); fflush(stderr); } while (0)
 #else
 #define DBG(x...)
 #endif
