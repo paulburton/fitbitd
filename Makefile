@@ -48,6 +48,14 @@ clobber:
 .PHONY: install
 install:
 
+.PHONY: install-udev
+install-udev:
+	install -Dm644 51-fitbit.rules $(DESTDIR)/lib/udev/rules.d/51-fitbit.rules
+
+.PHONY: deps
+deps:
+	@echo "All dependencies satisfied"
+
 # daemon
 include libant/Makefile
 include libfitbit/Makefile

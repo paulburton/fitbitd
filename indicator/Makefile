@@ -34,7 +34,7 @@ $(indicator_target): $(indicator_objects) $(libfitbitdcontrol_a_target)
 	@mkdir -p $(dir $@)
 	$(CC) $(indicator_cflags) $(CFLAGS) -o "$@" $(indicator_objects) $(indicator_ldflags)
 
-$(indicator_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@))
+$(indicator_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@)) indicator-pkgconfig-deps
 	@mkdir -p $(dir $@)
 	$(CC) $(indicator_cflags) $(CFLAGS) -o "$@" -c "$<"
 
@@ -53,3 +53,9 @@ install-indicator: $(indicator_target)
 	install -Dm644 "$(ldir)/icons/indicator-fitbit-no-base.svg" "$(idir)/indicator-fitbit-no-base.svg"
 	install -Dm644 "$(ldir)/icons/indicator-fitbit-idle.svg" "$(idir)/indicator-fitbit-idle.svg"
 	install -Dm644 "$(ldir)/icons/indicator-fitbit-syncing.svg" "$(idir)/indicator-fitbit-syncing.svg"
+
+deps: indicator-pkgconfig-deps
+.PHONY: indicator-pkgconfig-deps
+indicator-pkgconfig-deps:
+	@pkg-config gtk+-3.0 || ( echo "gtk+-3.0 not found"; exit 1 )
+	@pkg-config indicator3-0.4 || ( echo "indicator3-0.4 not found"; exit 1 )

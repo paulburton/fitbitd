@@ -29,6 +29,7 @@ fitbitd_ldflags := \
 
 fitbitd_objects := $(addprefix $(DIR_LOCAL_OBJ)/,$(patsubst %.c,%.o,$(fitbitd_src)))
 fitbitd_target := $(DIR_LOCAL_OBJ)/fitbitd
+fitbitd_deps := fitbitd-pkgconfig-deps
 
 ifeq ($(STATIC_LIBFITBIT),1)
 fitbitd_deps += \
@@ -69,3 +70,10 @@ install-fitbitd: ldir:=$(DIR_LOCAL)
 install-fitbitd: $(fitbitd_target)
 	install -Dm755 "$(fitbitd_target)" "$(DESTDIR)/bin/fitbitd"
 	install -Dm644 "$(ldir)/fitbitd.service" "$(DESTDIR)/share/dbus-1/services/fitbitd.service"
+
+deps: fitbitd-pkgconfig-deps
+.PHONY: fitbitd-pkgconfig-deps
+fitbitd-pkgconfig-deps:
+	@pkg-config --atleast-version=2.7 mxml || ( echo "mxml>=2.7 not found"; exit 1 )
+	@pkg-config dbus-1 || ( echo "dbus-1 not found"; exit 1 )
+	@pkg-config libcurl || ( echo "libcurl not found"; exit 1 )

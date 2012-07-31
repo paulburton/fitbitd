@@ -19,7 +19,7 @@ $(libfitbitdcontrol_a_target): $(libfitbitdcontrol_a_objects)
 	@mkdir -p $(dir $@)
 	$(AR) rcs "$@" $(libfitbitdcontrol_a_objects)
 
-$(libfitbitdcontrol_a_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@))
+$(libfitbitdcontrol_a_objects): $(DIR_LOCAL)/$$(notdir $$(patsubst %.o,%.c,$$@)) libfitbitdcontrol-pkgconfig-deps
 	@mkdir -p $(dir $@)
 	$(CC) $(libfitbitdcontrol_cflags) $(CFLAGS) -o "$@" -c "$<"
 
@@ -28,3 +28,8 @@ clean: clean-libfitbitdcontrol
 clean-libfitbitdcontrol: objdir:=$(DIR_LOCAL_OBJ)
 clean-libfitbitdcontrol:
 	rm -rf $(objdir)
+
+deps: libfitbitdcontrol-pkgconfig-deps
+.PHONY: libfitbitdcontrol-pkgconfig-deps
+libfitbitdcontrol-pkgconfig-deps:
+	@pkg-config dbus-glib-1 || ( echo "dbus-glib-1 not found"; exit 1 )
