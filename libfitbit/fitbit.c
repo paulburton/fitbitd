@@ -34,6 +34,7 @@ struct fitbit_s {
     uint8_t bank_id;
 
     uint8_t curr_dev_num[2];
+    uint8_t skipped_setups, max_skipped_setups;
 };
 
 typedef struct {
@@ -51,8 +52,10 @@ static int fitbit_init_ant_channel(fitbit_t *fb, uint8_t dev_num[2])
     int attempts;
 
     if (!memcmp(dev_num, fb->curr_dev_num, sizeof(fb->curr_dev_num))) {
-        DBG("ANT channel already setup\n");
-        return 0;
+        if (fb->skipped_setups++ < fb->max_skipped_setups) {
+            DBG("ANT channel already setup\n");
+            return 0;
+        }
     }
     DBG("init ANT channel %d dev_num 0x%02x 0x%02x\n", fb->chan,
         dev_num[0], dev_num[1]);
@@ -93,6 +96,7 @@ static int fitbit_init_ant_channel(fitbit_t *fb, uint8_t dev_num[2])
 
     /* all done, record dev num */
     memcpy(fb->curr_dev_num, dev_num, sizeof(fb->curr_dev_num));
+    fb->skipped_setups = 0;
 
     return 0;
 err:
@@ -376,6 +380,7 @@ static void fitbit_found_ant_node(ant_t *ant, void *user)
 
     fb->ant = ant;
     fb->packet_id_counter = 1;
+    fb->max_skipped_setups = 10;
 
     state->found++;
     state->found_base(fb, state->user);
@@ -398,6 +403,11 @@ void fitbit_destroy(fitbit_t *fb)
 {
     ant_destroy(fb->ant);
     free(fb);
+}
+
+void fitbit_set_max_setup_skip(fitbit_t *fb, uint8_t max_skip)
+{
+    fb->max_skipped_setups = max_skip;
 }
 
 int fitbit_sync_trackers(fitbit_t *fb, fitbit_cb_sync *do_sync, void *user)
