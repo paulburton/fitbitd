@@ -505,7 +505,6 @@ int ant_receive_burst(ant_t *ant, uint8_t chan, uint8_t *data, size_t sz, size_t
     ant_message_t *msg = NULL;
     int attempts;
     struct timespec ts;
-    uint8_t *dataptr = data;
     size_t cpy, datarem = sz;
 
     memset(&ts, 0, sizeof(ts));
@@ -537,8 +536,7 @@ int ant_receive_burst(ant_t *ant, uint8_t chan, uint8_t *data, size_t sz, size_t
         if (msg->id == 0x4f) {
             /* acked data */
             cpy = MIN(datarem, msg->len - 1);
-            memcpy(dataptr, &msg->data[1], cpy);
-            dataptr += cpy;
+            memcpy(data + (sz - datarem), &msg->data[1], cpy);
             datarem -= cpy;
             goto burst_done;
         }
@@ -546,8 +544,7 @@ int ant_receive_burst(ant_t *ant, uint8_t chan, uint8_t *data, size_t sz, size_t
         if (msg->id == 0x50) {
             /* burst data */
             cpy = MIN(datarem, msg->len - 1);
-            memcpy(dataptr, &msg->data[1], cpy);
-            dataptr += cpy;
+            memcpy(data + (sz - datarem), &msg->data[1], cpy);
             datarem -= cpy;
             if (msg->data[0] & 0x80) {
                 /* last packet */

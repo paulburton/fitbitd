@@ -45,7 +45,7 @@ int b64decode(uint8_t *buf, size_t sz, const unsigned char* str)
         -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1   /* F0-FF */
     };
 
-    d = dlast = phase = 0;
+    dlast = phase = 0;
     start = buf;
     rem = sz;
     for (cur = str; *cur != '\0'; cur++)

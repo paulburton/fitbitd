@@ -264,7 +264,7 @@ static void sync_tracker(fitbit_t *fb, fitbit_tracker_info_t *tracker, void *use
     char url[256], postname[30], response_enc[32768], *response_body = NULL;
     const char *attr_host, *attr_path, *attr_port, *attr_secure;
     const char *attr_encrypted, *val_opcode, *val_payload, *val_response;
-    sync_op_t *ops = NULL, **last_op = &ops, *op;
+    sync_op_t *ops = NULL, **last_op, *op;
     int bytes, ret, op_idx, op_num = 0;
     uint8_t payload_buf[512], response_buf[32768];
     size_t response_len;
