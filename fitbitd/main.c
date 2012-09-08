@@ -200,7 +200,7 @@ static void dump_sync_op(fitbitd_prefs_t *prefs, uint8_t serial[5], long sync_ti
     snprintf(fname_op, sizeof(fname_op), "%s-op", fname_base);
     file = fopen(fname_op, "w");
     if (file) {
-        fwrite(op, 1, sizeof(op), file);
+        fwrite(op, 1, 7, file);
         fclose(file);
         DBG("dumped to %s\n", fname_op);
     } else
