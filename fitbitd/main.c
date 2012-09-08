@@ -565,6 +565,7 @@ static void print_usage(FILE *f)
           "  --help             Output this message\n"
           "  --version          Output version and exit\n"
           "  --no-daemon        Don't daemonise fitbitd\n"
+          "  --no-dbus          Disable DBUS control\n"
           "  --dump <dir>       Dump all sync operations to the directory <dir>\n"
           "  --log <filename>   Write log messages to <filename>\n"
           "  --exit             Request that fitbitd exits\n");
@@ -578,6 +579,7 @@ int main(int argc, char *argv[])
     int synced, lockfile = -1;
     bool opt_version = false;
     bool opt_nodaemon = false;
+    bool opt_nodbus = false;
     bool opt_exit = false;
     bool opt_help = false;
     char *opt_dump = NULL;
@@ -596,6 +598,11 @@ int main(int argc, char *argv[])
 
         if (!strcmp(argv[argi], "--no-daemon")) {
             opt_nodaemon = true;
+            continue;
+        }
+
+        if (!strcmp(argv[argi], "--no-dbus")) {
+            opt_nodbus = true;
             continue;
         }
 
@@ -684,7 +691,7 @@ int main(int argc, char *argv[])
       setvbuf(stderr, NULL, _IONBF, 0);
     }
 
-    if (control_start()) {
+    if (!opt_nodbus && control_start()) {
         ERR("failed to start control\n");
         goto out;
     }

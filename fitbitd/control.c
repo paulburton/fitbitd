@@ -298,16 +298,31 @@ int control_start(void)
 
 void control_stop(void)
 {
+    if (control_init_ret) {
+        /* control isn't running */
+        return;
+    }
+
     control_exit = true;
 }
 
 bool control_exited(void)
 {
+    if (control_init_ret) {
+        /* control isn't running */
+        return false;
+    }
+
     return control_exit;
 }
 
 void control_signal_state_change(void)
 {
+    if (control_init_ret) {
+        /* control isn't running */
+        return;
+    }
+
     control_state_changed = true;
 }
 
