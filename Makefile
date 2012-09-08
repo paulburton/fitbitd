@@ -21,8 +21,8 @@ DIR_OUT := out
 DIR_BIN := $(DIR_OUT)/bin
 DIR_OBJ := $(DIR_OUT)/obj
 
-AR := ar
-CC := gcc
+AR ?= ar
+CC ?= gcc
 
 CFLAGS += \
 	-Wall -Werror -O2 \
