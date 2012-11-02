@@ -139,7 +139,8 @@ typedef struct {
 static void foreach_enum_trackers(gpointer data, gpointer user)
 {
     enum_trackers_state_t *state = user;
-    GValueArray *str = data;
+    GArray *str = g_array_new (FALSE, FALSE, sizeof (data));
+    g_array_append_vals(str, data, 5);
     fitbitd_tracker_t *tracker;
     GValue *val_serial;
     GValue *val_state;
@@ -150,11 +151,11 @@ static void foreach_enum_trackers(gpointer data, gpointer user)
     guint sync_age;
     GDateTime *time_now;
 
-    val_serial = g_value_array_get_nth(str, 0);
-    val_state = g_value_array_get_nth(str, 1);
-    val_sync_age = g_value_array_get_nth(str, 2);
-    val_tracker_id = g_value_array_get_nth(str, 3);
-    val_user_id = g_value_array_get_nth(str, 4);
+    val_serial = g_array_index(str, GValue *, 0);
+    val_state = g_array_index(str, GValue *, 1);
+    val_sync_age = g_array_index(str, GValue *, 2);
+    val_tracker_id = g_array_index(str, GValue *, 3);
+    val_user_id = g_array_index(str, GValue *, 4);
 
     if (!val_serial || !val_state || !val_sync_age || !val_tracker_id || !val_user_id) {
         g_printerr("Missing tracker values\n");
